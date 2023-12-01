@@ -1,6 +1,8 @@
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -23,35 +25,79 @@ public class App extends JPanel implements ActionListener, FocusListener {
 
     JLabel outputValue;
     JTextField inputValue;
+    JComboBox currencyChooserStart, currencyChooserOutput;
+    Currency unitedStatesDollar = new Currency("USD", 1f);
+    Currency polishZloty = new Currency("PLN", 0.22f);
+    Currency[] currencies = {unitedStatesDollar, polishZloty};
 
     public App() {
-        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+
+        
+
+        String[] currenciesList = {unitedStatesDollar.currencyName, polishZloty.currencyName};
 
         JLabel inputMessage = new JLabel("Please input the amount of money in PLN");
+        inputMessage.setBounds(50, 20, 300, 20);
 
-        this.inputValue = new JTextField();
-        this.inputValue.setMaximumSize(new Dimension(100, 20));
-        this.inputValue.addActionListener(this);
-        this.inputValue.addFocusListener(this);
+        currencyChooserStart = new JComboBox(currenciesList);
+        currencyChooserStart.setBounds(50, 50, 100, 20);
+
+        currencyChooserOutput = new JComboBox(currenciesList);
+        currencyChooserOutput.setBounds(150, 50, 100, 20);
+
+        inputValue = new JTextField();
+        inputValue.setBounds(50, 80, 200, 20);
+        inputValue.addActionListener(this);
+        inputValue.addFocusListener(this);
 
         JButton convertBtn = new JButton("Convert");
         convertBtn.setVerticalTextPosition(AbstractButton.CENTER);
         convertBtn.setActionCommand("convert");
+        convertBtn.setBounds(50, 120, 100, 20);
 
-        this.outputValue = new JLabel("Converted Value");
+        outputValue = new JLabel("Converted Value");
+        outputValue.setBounds(50, 160, 300, 20);
 
         // Listen for actions on convertBtn
         convertBtn.addActionListener(this);
 
         add(inputMessage);
-        add(this.inputValue);
+        add(currencyChooserStart);
+        add(currencyChooserOutput);
+        add(inputValue);
         add(convertBtn);
-        add(this.outputValue);
+        add(outputValue);
+
+        setLayout(null);
+        setVisible(true);
+        setSize(400, 300);
     }
 
     public void actionPerformed(ActionEvent e) {
         if ("convert".equals(e.getActionCommand())) {
-            this.outputValue.setText("Converted Value: " + String.valueOf(Integer.valueOf(this.inputValue.getText()) * 0.22) + " USD");
+            float moneyInputValue = Float.parseFloat(inputValue.getText());
+
+            Currency startingCurrency = unitedStatesDollar;
+            Currency resultCurrenty = unitedStatesDollar;
+
+            // Find the selected currency that was chosen in the JComboBox currencyChooserStart
+            for (int i = 0; i < currencies.length; i++) {
+                if (currencyChooserStart.getSelectedItem() == currencies[i].currencyName) {
+                    startingCurrency = currencies[i];
+                    break;
+                }
+            }
+
+            // Do the same for the currencyChooserResult
+            for (int i = 0; i < currencies.length; i++) {
+                if (currencyChooserOutput.getSelectedItem() == currencies[i].currencyName) {
+                    resultCurrenty = currencies[i];
+                    break;
+                }
+            }
+            outputValue.setText("Converted Value: " + String.valueOf(CurrencyConverter.convert(moneyInputValue, startingCurrency, resultCurrenty)) + " " + resultCurrenty.currencyName);
+
+            
         }
     }
 
@@ -85,6 +131,7 @@ public class App extends JPanel implements ActionListener, FocusListener {
     }
 
     public static void main(String[] args) throws Exception {
+
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowGUI();
