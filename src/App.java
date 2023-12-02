@@ -19,63 +19,97 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 
 public class App extends JPanel implements ActionListener, FocusListener {
 
-    JLabel outputValue;
+    JLabel outputValue, inputMessage;
     JTextField inputValue;
     JComboBox currencyChooserStart, currencyChooserOutput;
     Currency unitedStatesDollar = new Currency("USD", 1f);
     Currency polishZloty = new Currency("PLN", 0.22f);
-    Currency[] currencies = {unitedStatesDollar, polishZloty};
+    Currency euro = new Currency("EUR", 0.95f);
+    Currency[] currencies = {unitedStatesDollar, polishZloty, euro};
 
     public App() {
 
         
 
-        String[] currenciesList = {unitedStatesDollar.currencyName, polishZloty.currencyName};
+        String[] currenciesList = {unitedStatesDollar.currencyName, polishZloty.currencyName, euro.currencyName};
 
-        JLabel inputMessage = new JLabel("Please input the amount of money in PLN");
-        inputMessage.setBounds(50, 20, 300, 20);
+        JLabel inputCurrencyLabel = new JLabel("Input currency");
+        inputCurrencyLabel.setBounds(10, 10, 100, 20);
+
+        JLabel outputCurrencyLabel = new JLabel("Output currency");
+        outputCurrencyLabel.setBounds(120, 10, 100, 20);
 
         currencyChooserStart = new JComboBox(currenciesList);
-        currencyChooserStart.setBounds(50, 50, 100, 20);
+        currencyChooserStart.setBounds(10, 40, 100, 20);
 
         currencyChooserOutput = new JComboBox(currenciesList);
-        currencyChooserOutput.setBounds(150, 50, 100, 20);
+        currencyChooserOutput.setBounds(120, 40, 100, 20);
+
+        inputMessage = new JLabel("Please input the amount of money");
+        inputMessage.setBounds(10, 70, 300, 20);
 
         inputValue = new JTextField();
-        inputValue.setBounds(50, 80, 200, 20);
+        inputValue.setBounds(10, 100, 100, 20);
         inputValue.addActionListener(this);
         inputValue.addFocusListener(this);
+
+        JLabel choosenInputCurrency = new JLabel("USD");
+        choosenInputCurrency.setBounds(120, 100, 50, 20);
+
+        currencyChooserStart.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String selectedCurrency = unitedStatesDollar.currencyName;
+                // Find the selected currency that was chosen in the JComboBox currencyChooserStart
+                for (int i = 0; i < currencies.length; i++) {
+                    if (currencyChooserStart.getSelectedItem() == currencies[i].currencyName) {
+                        selectedCurrency = currencies[i].currencyName;
+                        break;
+                    }
+                }
+                choosenInputCurrency.setText(selectedCurrency);
+            }
+        });
 
         JButton convertBtn = new JButton("Convert");
         convertBtn.setVerticalTextPosition(AbstractButton.CENTER);
         convertBtn.setActionCommand("convert");
-        convertBtn.setBounds(50, 120, 100, 20);
+        convertBtn.setBounds(50, 130, 100, 20);
 
         outputValue = new JLabel("Converted Value");
-        outputValue.setBounds(50, 160, 300, 20);
+        outputValue.setBounds(10, 160, 200, 20);
 
         // Listen for actions on convertBtn
         convertBtn.addActionListener(this);
 
-        add(inputMessage);
+        add(inputCurrencyLabel);
+        add(outputCurrencyLabel);
         add(currencyChooserStart);
         add(currencyChooserOutput);
+        add(inputMessage);
         add(inputValue);
+        add(choosenInputCurrency);
         add(convertBtn);
         add(outputValue);
 
         setLayout(null);
         setVisible(true);
-        setSize(400, 300);
+        setSize(300, 300);
     }
 
     public void actionPerformed(ActionEvent e) {
         if ("convert".equals(e.getActionCommand())) {
-            float moneyInputValue = Float.parseFloat(inputValue.getText());
+            float moneyInputValue = 0f;
+            try {
+                moneyInputValue = Float.parseFloat(inputValue.getText());
+            } catch(Exception ex) {
+                System.out.println(ex);
+            }
 
             Currency startingCurrency = unitedStatesDollar;
             Currency resultCurrenty = unitedStatesDollar;
@@ -95,9 +129,10 @@ public class App extends JPanel implements ActionListener, FocusListener {
                     break;
                 }
             }
-            outputValue.setText("Converted Value: " + String.valueOf(CurrencyConverter.convert(moneyInputValue, startingCurrency, resultCurrenty)) + " " + resultCurrenty.currencyName);
+            DecimalFormat df = new DecimalFormat("#.##");
+            df.setRoundingMode(RoundingMode.FLOOR);
 
-            
+            outputValue.setText("Converted Value: " + String.valueOf(df.format(CurrencyConverter.convert(moneyInputValue, startingCurrency, resultCurrenty))) + " " + resultCurrenty.currencyName);         
         }
     }
 
